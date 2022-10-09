@@ -18,4 +18,4 @@ After this command, just open
 ## Notes
 
 - app has been tested and developed on `ubuntu 18.04.5 LTS`
-- .env file include in repo for testing purpose
+- .env file included in repo for testing purpose
