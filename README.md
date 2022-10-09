@@ -1,4 +1,4 @@
-## laravel-sales
+## laravel-docker-NMP
 
 Default laravel app with docker-compose setup for
 
