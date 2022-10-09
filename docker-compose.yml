@@ -39,7 +39,7 @@ services:
         restart: always
         volumes:
             - ./:/var/www
-            - ./public/storage:/var/www/public/storage
+            - ./storage/app/public:/var/www/public/storage
             - ${DOCKER_COMPOSE__SERVICES_PATH}/nginx:/etc/nginx/conf.d
         working_dir: /var/www
     php-fpm:
@@ -75,5 +75,5 @@ services:
             - 8001:80
         restart: always
 networks:
-    laravel-sales-network:
+    laravel-docker-NMP-network:
         driver: bridge
