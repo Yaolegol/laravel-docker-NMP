@@ -7,9 +7,6 @@ services:
             dockerfile: ${DOCKER_COMPOSE__SERVICES_PATH}/app/Dockerfile
         command: sh -c "composer install && php artisan migrate --seed"
         container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-app
-        environment:
-            DB_HOST: db
-        image: php:8.0-cli
         networks:
             - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
         restart: on-failure
@@ -54,6 +51,7 @@ services:
         container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-fpm
         depends_on:
             - db
+        image: php:8.0-fpm
         networks:
             - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
         restart: always
