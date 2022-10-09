@@ -39,6 +39,7 @@ services:
         restart: always
         volumes:
             - ./:/var/www
+            - ./public/storage:/var/www/public/storage
             - ${DOCKER_COMPOSE__SERVICES_PATH}/nginx:/etc/nginx/conf.d
         working_dir: /var/www
     php-fpm:

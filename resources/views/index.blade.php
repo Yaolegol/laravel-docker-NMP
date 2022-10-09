@@ -31,6 +31,10 @@
                     <div>{{$usersData['name']}}</div>
                 @endforeach
             </div>
+            <div class="mt-8" style="font-weight: 800;">Image from storage:</div>
+            <div class="mt-8">
+                <img src="/storage/1.jpg" alt="">
+            </div>
         </div>
     </body>
 </html>
