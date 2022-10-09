@@ -3,64 +3,78 @@ version: '3.8'
 services:
     app:
         build:
-            args:
-                user: oleg
-                uid: 1000
-            context: ./
-            dockerfile: ./docker-compose/services/app/Dockerfile
-        image: laravel-sales
-        depends_on:
-            - db
-        container_name: laravel-sales-app
-        restart: unless-stopped
-        working_dir: /var/www/
-        volumes:
-            - ./:/var/www
+            context: .
+            dockerfile: ${DOCKER_COMPOSE__SERVICES_PATH}/app/Dockerfile
+        command: sh -c "composer install && php artisan migrate --seed"
+        container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-app
+        environment:
+            DB_HOST: db
+        image: php:8.0-cli
         networks:
-            - laravel-sales-network
+            - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
+        restart: on-failure
+        volumes:
+            - .:/app
+        working_dir: /app
     db:
-        image: mysql:5.7
-        container_name: laravel-sales-db
-        restart: unless-stopped
+        container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-db
         environment:
             MYSQL_DATABASE: ${DB_DATABASE}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
             MYSQL_PASSWORD: ${DB_PASSWORD}
             MYSQL_USER: ${DB_USERNAME}
-            SERVICE_TAGS: dev
-            SERVICE_NAME: mysql
+        image: mysql:5.7
+        networks:
+            - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
+        restart: always
         volumes:
             - ./db:/var/lib/mysql
+    nginx:
+        container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-nginx
+        depends_on:
+            - php-fpm
+            - db
+        image: nginx:1.23.1
         networks:
-            - laravel-sales-network
-    phpmyadmin:
-        image: phpmyadmin
+            - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
+        ports:
+            - 8000:80
+        restart: always
+        volumes:
+            - ./:/var/www
+            - ${DOCKER_COMPOSE__SERVICES_PATH}/nginx:/etc/nginx/conf.d
+        working_dir: /var/www
+    php-fpm:
+        build:
+            args:
+                user: oleg
+                uid: 1000
+            context: .
+            dockerfile: ${DOCKER_COMPOSE__SERVICES_PATH}/fpm/Dockerfile
+        container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-fpm
         depends_on:
             - db
+        networks:
+            - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
         restart: always
-        ports:
-            - 8001:80
+        volumes:
+            - ./:/var/www
+        working_dir: /var/www
+    phpmyadmin:
+        container_name: ${DOCKER_COMPOSE__CONTAINERS_BASE_NAME}-phpmyadmin
+        depends_on:
+            - db
         environment:
             - PMA_HOST=${DB_HOST}
             - PMA_PORT=${DB_PORT}
             - PMA_USER=${DB_USERNAME}
             - PMA_PASSWORD=${DB_PASSWORD}
+        image: phpmyadmin
         networks:
-            - laravel-sales-network
-    nginx:
-        image: nginx:1.17-alpine
-        depends_on:
-            - app
-        container_name: laravel-sales-nginx
-        restart: unless-stopped
+            - ${DOCKER_COMPOSE__NETWORK_BASE_NAME}
         ports:
-            - 8000:80
-        volumes:
-            - ./:/var/www
-            - ./docker-compose/services/nginx:/etc/nginx/conf.d
-        networks:
-            - laravel-sales-network
-
+            - 8001:80
+        restart: always
 networks:
     laravel-sales-network:
         driver: bridge
